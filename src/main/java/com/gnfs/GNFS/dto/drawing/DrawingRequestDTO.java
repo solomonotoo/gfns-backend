@@ -1,0 +1,17 @@
+package com.gnfs.GNFS.dto.drawing;
+
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class DrawingRequestDTO {
+	
+	private String name;
+	private String description;
+	
+
+}

@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: GNFS
+    
+ 
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/gnfs
+    username: root
+    password: shopme123
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    #    dialect: org.hibernate.dialect.MySQLDialect
+
+
+frontend.url: http://localhost:3001
