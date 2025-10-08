@@ -1,5 +1,9 @@
 package com.gnfs.GNFS.entity;
 
+import java.time.LocalDateTime;
+
+import org.springframework.data.annotation.CreatedDate;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -45,4 +49,8 @@ public class IncidentAdd {
 	@ManyToOne
 	@JoinColumn(name = "incident_type_id", nullable = false)
 	private IncidentType incidentType;
+	
+	@CreatedDate
+	@Column(updatable = false)
+	private LocalDateTime createDate;
 }

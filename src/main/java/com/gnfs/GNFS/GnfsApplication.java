@@ -39,7 +39,9 @@ public class GnfsApplication {
 	@Bean
 	ModelMapper getModelMapper() {
 		ModelMapper modelMapper = new ModelMapper();
-		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT)
+		.setSkipNullEnabled(true); // 👈 This prevents nulls from overwriting
+
 //		modelMapper.typeMap(Activity.class, ActivityResponseDTO.class).addMappings(mapper -> {
 //		    mapper.map(src -> src.getActivityType().getId(), ActivityResponseDTO::setActivityType);
 //		});
@@ -161,6 +163,7 @@ public class GnfsApplication {
    			mapper.skip(IncidentAdd :: setIncidentType);
    		});
    		
+
    		
    		
 

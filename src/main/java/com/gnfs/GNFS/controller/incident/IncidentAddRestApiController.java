@@ -49,6 +49,14 @@ public class IncidentAddRestApiController {
 	}
 	
 	
+	@GetMapping("/{id}")
+	public ResponseEntity<CustomSuccessMessageResponse<?>> getIncident(@PathVariable Long id) {
+		IncidentAddResponseDTO incident = incidentAddService.getIncidentAddId(id);
+		CustomSuccessMessageResponse<?> response = new CustomSuccessMessageResponse<>("Incident retrieved successfully!",incident);
+		return ResponseEntity.ok(response);
+	}
+	
+	
 //	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 //	public ResponseEntity<CustomSuccessMessageResponse<?>> createIncident(
 //			@Valid @RequestPart("dto") IncidentAddRequestDTO dto, 
@@ -72,33 +80,31 @@ public class IncidentAddRestApiController {
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<CustomSuccessMessageResponse<?>> createIncident(
 			@Valid @RequestPart("dto") IncidentAddRequestDTO dto, 
-			@RequestPart("photo") MultipartFile multipartFile ) throws IOException {
+			@RequestPart(value="photo", required = false) MultipartFile photo ) throws IOException {
 		
-		if (multipartFile.isEmpty()) {
-	        throw new IllegalArgumentException("Incident picture is required");
+//		if (multipartFile == null || multipartFile.isEmpty()) {
+//	        if (dto.getPhoto() == null || dto.getPhoto().isBlank()) {
+//	            throw new IllegalArgumentException("Incident picture is required");
+//	        }
+//	    } else {
+//	        String fileName = StringUtils.cleanPath(multipartFile.getOriginalFilename());
+//	        dto.setPhoto(fileName);
+//	    }
+		
+		if (photo != null && !photo.isEmpty()) {
+	        String fileName = StringUtils.cleanPath(photo.getOriginalFilename());
+	        dto.setPhoto(fileName);
+	        FileUploadUtil.saveFile("incident-photos", fileName, photo);
 	    }
-		
-			//gets the file name
-			String fileName = StringUtils.cleanPath(UUID.randomUUID() + "_" + multipartFile.getOriginalFilename());
-			dto.setPhoto(fileName);
-			
-			IncidentAddResponseDTO incident = incidentAddService.createIncidentAdd(dto);
-			
-			// directory name with saved user id
-			String uploadDir = "Incident-photos/" + incident.getId(); 
-			
-			FileUploadUtil.cleanDir(uploadDir);
-			FileUploadUtil.saveFile("uploads/", fileName, multipartFile);
-			
-	
-		
-//		String fileName = UUID.randomUUID() + "_" + multipartFile.getOriginalFilename();
-//		FileUploadUtil.cleanDir(fileName);
-//		FileUploadUtil.saveFile("uploads/", fileName, multipartFile);
-//		dto.setPhoto(fileName);
-//		
-//		IncidentAddResponseDTO incident = incidentAddService.createIncidentAdd(dto);
-	
+
+	    IncidentAddResponseDTO incident = incidentAddService.createIncidentAdd(dto);
+
+//	    if (multipartFile != null && !multipartFile.isEmpty()) {
+//	        String uploadDir = "Incident-photos/" + incident.getId();
+//	        FileUploadUtil.cleanDir(uploadDir);
+//	        FileUploadUtil.saveFile(uploadDir + "/", dto.getPhoto(), multipartFile);
+//	    }
+	    
 		CustomSuccessMessageResponse<?> response = new CustomSuccessMessageResponse<>("Incident Created Successfully!", incident);
 		
 		
@@ -111,15 +117,17 @@ public class IncidentAddRestApiController {
 			@PathVariable Long id, @Valid @RequestPart("dto") IncidentAddRequestDTO dto,
 			@RequestPart(value = "photo", required = false) MultipartFile multipartFile) throws IOException {
 		
-		//replace photo if provided
 		if (multipartFile != null && !multipartFile.isEmpty()) {
-			String fileName = UUID.randomUUID() + "_" + multipartFile.getOriginalFilename();
-			FileUploadUtil.saveFile("uploads/", fileName, multipartFile);
-			dto.setPhoto(fileName);
-		}
-		
-		IncidentAddResponseDTO incident = incidentAddService.updateIncidentAdd(id, dto);
-		
+	        String fileName = StringUtils.cleanPath(multipartFile.getOriginalFilename());
+	        dto.setPhoto(fileName);
+
+	        String uploadDir = "Incident-photos/" + id;
+	        FileUploadUtil.cleanDir(uploadDir);
+	        FileUploadUtil.saveFile(uploadDir, fileName, multipartFile);
+	    }
+
+	    IncidentAddResponseDTO incident = incidentAddService.updateIncidentAdd(id, dto);
+				
 		return ResponseEntity.ok(
 				new CustomSuccessMessageResponse<>("Incident updated successfully!", incident)
 	        );
