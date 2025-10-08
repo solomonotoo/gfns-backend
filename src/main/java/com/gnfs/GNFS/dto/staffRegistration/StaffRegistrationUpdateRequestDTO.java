@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Size;
 
 public record StaffRegistrationUpdateRequestDTO(
 		@NotNull(message = "Id is required for update")
-		    Long id,
+		Long id,
 		    
 		@NotBlank(message = "First Name is required")
 		@Size(min = 2, message = "First Name should have at 2 characters")

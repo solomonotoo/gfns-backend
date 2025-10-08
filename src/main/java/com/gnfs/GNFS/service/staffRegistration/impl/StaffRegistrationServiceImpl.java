@@ -58,7 +58,7 @@ public class StaffRegistrationServiceImpl implements StaffRegistrationService{
 
 	@Override
 	public void deleteStaffRegistration(Long id) {
-		Long countById = staffRegistrationRepo.CountById(id);
+		Long countById = staffRegistrationRepo.countById(id);
 		if(countById == null || countById == 0) {
 			throw new StaffRegistrationNotFoundException("Could not find staff ID: " + id);
 		}

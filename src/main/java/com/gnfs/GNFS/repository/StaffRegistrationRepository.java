@@ -6,5 +6,5 @@ import com.gnfs.GNFS.entity.StaffRegistration;
 
 public interface StaffRegistrationRepository extends JpaRepository<StaffRegistration, Long> {
 
-	Long CountById(Long id);
+	Long countById(Long id);
 }

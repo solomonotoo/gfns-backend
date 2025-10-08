@@ -5,10 +5,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "staff_registration")
-public class StaffRegistration extends IdBaseEntityNumeric<Long>{
+@Setter
+@Getter
+public class StaffRegistration extends IdBaseEntity<Long>{
 
 	@Column(name = "first_name", nullable = false)
 	private String firstName;
