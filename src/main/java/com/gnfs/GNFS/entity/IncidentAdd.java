@@ -1,6 +1,7 @@
 package com.gnfs.GNFS.entity;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.data.annotation.CreatedDate;
 
@@ -11,6 +12,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
 
@@ -37,6 +39,10 @@ public class IncidentAdd {
 	
 	@Column(nullable = false)
 	private String photo;
+	
+	@ManyToOne
+	@JoinColumn(name = "incident_assigned_officer_id")
+	private IncidentAssignedToOfficer incidentAssigned;
 	
 	@ManyToOne
 	@JoinColumn(name = "region_id", nullable = false)

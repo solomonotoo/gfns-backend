@@ -3,10 +3,12 @@ package com.gnfs.GNFS.controller.enumerator;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.gnfs.GNFS.dto.enums.EnumResponse;
 import com.gnfs.GNFS.dto.enums.PaymentModeEnumDTO;
 import com.gnfs.GNFS.dto.finance.BillTypeEnumDTO;
 import com.gnfs.GNFS.entity.BillTypeEnum;
 import com.gnfs.GNFS.entity.CertificationTypeEnum;
+import com.gnfs.GNFS.entity.IncidentPriorityEnum;
 import com.gnfs.GNFS.entity.PaymentModeEnum;
 import com.gnfs.GNFS.entity.StatusEnum;
 
@@ -40,13 +42,42 @@ public class EnumRestController {
 		return Arrays.stream(StatusEnum.values()).toList();
 	}
 	
+	@GetMapping("/incident-priority")
+	public List<EnumResponse> listPriorities(){
+		return Arrays.stream(IncidentPriorityEnum.values())
+				.map(priority -> new EnumResponse(priority.name(), priority.getDisplayName()))
+				.toList();
+	}
+	
 	
 	@GetMapping("/certificate-type")
 	public List<CertificationTypeEnum> listCertification(){
 		return Arrays.stream(CertificationTypeEnum.values()).toList();
 	}
 	
-	
+	//endpoint that can be used for all enum api
+//		@GetMapping("/{enumName}")
+//		public ResponseEntity<List<EnumResponse>> getEnumValues(@PathVariable String enumName) {
+//	        try {
+//	            String packageName = "com.gnfs.GNFS.entity"; // adjust if your enums are in another package
+//	            Class<?> enumClass = Class.forName(packageName + "." + enumName);
+//
+//	            if (!enumClass.isEnum()) {
+//	                return ResponseEntity.badRequest().build();
+//	            }
+//
+//	            @SuppressWarnings("unchecked")
+//	            List<EnumResponse> values = EnumUtils.toEnumResponseList((Class<? extends Enum>) enumClass);
+//	            return ResponseEntity.ok(values);
+//
+//	        } catch (ClassNotFoundException e) {
+//	            return ResponseEntity.notFound().build();
+//	        } catch (Exception e) {
+//	            return ResponseEntity.internalServerError().build();
+//	        }
+//	    }
+
+
 
 
 //1. BillTypeEnum.values()

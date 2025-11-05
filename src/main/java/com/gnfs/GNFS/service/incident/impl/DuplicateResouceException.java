@@ -1,4 +1,4 @@
-package com.gnfs.GNFS.service.incident.impli;
+package com.gnfs.GNFS.service.incident.impl;
 
 public class DuplicateResouceException extends RuntimeException {
 
