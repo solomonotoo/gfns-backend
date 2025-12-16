@@ -16,49 +16,89 @@ import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import com.gnfs.GNFS.exceptions.base.ApplictionException;
+import com.gnfs.GNFS.exceptions.base.ResourceNotFoundException;
+
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+//NB check GlobalExceptionHandler2.java for the previous code
+
 @ControllerAdvice
-public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+public class GlobalExceptionHandler  {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    // Generic exception handler
-    @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    @ResponseBody
-    public ErrorDTO handleGenericException(HttpServletRequest request, Exception ex) {
-        ErrorDTO error = new ErrorDTO();
-        error.setTimestamp(new Date());
-        error.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-        error.setPath(request.getServletPath());
 
-        LOGGER.error(ex.getMessage(), ex);
-        error.addFieldError("global", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
-        return error;
+    /* ---------- 404: Entity not found ---------- */
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNotFound(
+            ResourceNotFoundException ex,
+            HttpServletRequest request) {
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.of(
+                        HttpStatus.NOT_FOUND,
+                        ex.getMessage(),
+                        request.getRequestURI()));
     }
 
-    // Validation errors
-    @Override
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(
+    /* ---------- 400: Application / business errors ---------- */
+
+    @ExceptionHandler(ApplictionException.class)
+    public ResponseEntity<ErrorResponse> handleApplicationError(
+            ApplictionException ex,
+            HttpServletRequest request) {
+
+        return ResponseEntity.badRequest()
+                .body(ErrorResponse.of(
+                        HttpStatus.BAD_REQUEST,
+                        ex.getMessage(),
+                        request.getRequestURI()));
+    }
+
+
+    /* ---------- 400: Validation errors ---------- */
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidation(
             MethodArgumentNotValidException ex,
-            HttpHeaders headers,
-            HttpStatusCode status,
-            WebRequest request) {
+            HttpServletRequest request) {
 
-        ErrorDTO error = new ErrorDTO();
-        error.setTimestamp(new Date());
-        error.setStatus(HttpStatus.BAD_REQUEST.value());
-        error.setPath(((ServletWebRequest) request).getRequest().getServletPath());
+        Map<String, List<String>> fieldErrors = new HashMap<>();
 
-        Map<String, String> fieldErrors = new HashMap<>();
-        ex.getBindingResult().getFieldErrors().forEach(fieldError ->
-                fieldErrors.put(fieldError.getField(), fieldError.getDefaultMessage())
-        );
+        ex.getBindingResult().getFieldErrors()
+                .forEach(e ->
+                    fieldErrors
+                        .computeIfAbsent(e.getField(), k -> new ArrayList<>())
+                        .add(e.getDefaultMessage())
+                );
 
-        error.setFieldErrors(fieldErrors);
-        return new ResponseEntity<>(error, headers, status);
+        return ResponseEntity.badRequest()
+                .body(ErrorResponse.validation(
+                        request.getRequestURI(),
+                        fieldErrors));
+    }
+
+    
+    /* ---------- 500: Unknown errors ---------- */
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleGeneric(
+            Exception ex,
+            HttpServletRequest request) {
+
+        log.error("Unhandled exception", ex);
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ErrorResponse.of(
+                        HttpStatus.INTERNAL_SERVER_ERROR,
+                        "An unexpected error occurred",
+                        request.getRequestURI()));
     }
 }

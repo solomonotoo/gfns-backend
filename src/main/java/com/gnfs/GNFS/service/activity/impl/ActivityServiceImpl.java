@@ -14,6 +14,7 @@ import com.gnfs.GNFS.entity.Activity;
 import com.gnfs.GNFS.entity.ActivityType;
 import com.gnfs.GNFS.exceptions.ActivityNotFoundException;
 import com.gnfs.GNFS.exceptions.DistrictNotFoundException;
+import com.gnfs.GNFS.exceptions.base.EntityNotFoundException;
 import com.gnfs.GNFS.repository.ActivityRespository;
 import com.gnfs.GNFS.service.activity.ActivityService;
 
@@ -108,7 +109,8 @@ public class ActivityServiceImpl implements ActivityService{
 	@Override
 	public ActivityResponseDTO updataActivity(Integer id, ActivityRequestDTO activityRequestDTO) {
 		Activity activity = activityRepo.findById(id)
-				 .orElseThrow(() -> new ActivityNotFoundException("Activity not found"));
+				// .orElseThrow(() -> new ActivityNotFoundException("Activity not found"));
+					.orElseThrow(() -> new EntityNotFoundException(Activity.class, id));
 		
 		//activity.setName(activityRequestDTO.getName());
 		Activity activityDTO = activityRequestDtoToActivityEntity(activityRequestDTO);
@@ -126,7 +128,7 @@ public class ActivityServiceImpl implements ActivityService{
 		Long countById = activityRepo.countById(id);
 		
 		if(countById == null || countById == 0) {
-			throw new DistrictNotFoundException("Could not find District ID: " + id);
+			throw new EntityNotFoundException(Activity.class, id);
 		}
 		
 		activityRepo.deleteById(id);

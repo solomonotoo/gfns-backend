@@ -67,6 +67,8 @@ import lombok.Setter;
 //}
 
 
+//Code below is Outdated check ErrorResponse.java for more modern approach
+
 @Getter
 @Setter
 public class ErrorDTO {

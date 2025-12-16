@@ -10,9 +10,18 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.yaml.snakeyaml.nodes.ScalarNode;
 
+import com.gnfs.GNFS.dto.appManager.ApplicationFormReferenceDTO;
+import com.gnfs.GNFS.dto.appManager.BuildingTypeReferenceDTO;
+import com.gnfs.GNFS.dto.appManager.ConstructionTypeReferenceDTO;
+import com.gnfs.GNFS.dto.appManager.DistrictReferenceDTO;
+import com.gnfs.GNFS.dto.appManager.EquipAlarmSystemReferenceDTO;
+import com.gnfs.GNFS.dto.appManager.EquipEscapeMeansReferenceDTO;
+import com.gnfs.GNFS.dto.appManager.EquipFireSystemReferenceDTO;
 import com.gnfs.GNFS.dto.appManager.RegistrationFormRequestDTO;
 import com.gnfs.GNFS.dto.appManager.RegistrationFormResponseDTO;
+import com.gnfs.GNFS.dto.finance.ApplicationFormRequestDTO;
 import com.gnfs.GNFS.dto.finance.ApplicationFormResponseDTO;
+import com.gnfs.GNFS.dto.referenceDTO.RegionReferenceDTO;
 import com.gnfs.GNFS.entity.ApplicationForm;
 import com.gnfs.GNFS.entity.BillType;
 import com.gnfs.GNFS.entity.BuildConstructionType;
@@ -43,11 +52,10 @@ import com.gnfs.GNFS.service.applicationManager.RegistrationFormService;
 
 import lombok.RequiredArgsConstructor;
 
-
 @Service
 @RequiredArgsConstructor
-public class RegistrationFormServiceImpl implements RegistrationFormService{
-	
+public class RegistrationFormServiceImpl implements RegistrationFormService {
+
 	private final RegistrationFormRepository registrationRepo;
 	private final ApplicationFormRespository applicationFormRespo;
 	private final RegionRepository regionRepo;
@@ -63,9 +71,8 @@ public class RegistrationFormServiceImpl implements RegistrationFormService{
 
 	@Override
 	public List<RegistrationFormResponseDTO> listRegistrationForm() {
-		List<RegistrationForm> listRegistrationForms = registrationRepo.findAll(); 
-		return listRegistrationForms.stream().map(forms -> convertFromEntityToDTO(forms))
-				.toList();
+		List<RegistrationForm> listRegistrationForms = registrationRepo.findAll();
+		return listRegistrationForms.stream().map(forms -> convertFromEntityToDTO(forms)).toList();
 	}
 
 	@Override
@@ -84,12 +91,16 @@ public class RegistrationFormServiceImpl implements RegistrationFormService{
 	@Override
 	public RegistrationFormResponseDTO updataRegistrationForm(Long id,
 			RegistrationFormRequestDTO RegistrationFormRequestDTO) {
+
 		RegistrationForm existingForm = getRegistrationFormId(id);
+
 		RegistrationForm registrationFormToUpdate = convertFromDTOToEntity(RegistrationFormRequestDTO);
+
 		registrationFormToUpdate.setId(id);
-		
-		//map the updated pay bill to the existing pay bill
+
+		// map the updated form data to the existing form data
 		mapper.map(registrationFormToUpdate, existingForm);
+
 		RegistrationForm updateRegistrationForm = registrationRepo.save(existingForm);
 		return convertFromEntityToDTO(updateRegistrationForm);
 	}
@@ -97,142 +108,109 @@ public class RegistrationFormServiceImpl implements RegistrationFormService{
 	@Override
 	public void deleteRegistrationForm(Long id) {
 		Long countById = registrationRepo.countById(id);
-		
+
 		if (countById == null || countById == 0) {
 			throw new RegistrationFormNotFoundException("Could not find registraiont form ID: " + id);
 		}
 		registrationRepo.deleteById(id);
 	}
-	
 
 	private RegistrationForm getRegistrationFormId(Long id) {
 		return registrationRepo.findById(id)
 				.orElseThrow(() -> new RegistrationFormNotFoundException("Could not find registraiont form ID: " + id));
 	}
-	
+
 	private RegistrationFormResponseDTO convertFromEntityToDTO(RegistrationForm registrationForm) {
 		return mapper.map(registrationForm, RegistrationFormResponseDTO.class);
 	}
-	
-	private RegistrationForm convertFromDTOToEntity(RegistrationFormRequestDTO registrationFormRequestDTO) {
-		RegistrationForm registrationForm = mapper.map(registrationFormRequestDTO, RegistrationForm.class);
-		
-		 // Manually resolve and attach existing Bill Type
-//        if (registrationFormRequestDTO.getApplicationForm() != null && registrationFormRequestDTO.getApplicationForm().getId() != null) {
-//        	//Long billTypeId = payBillRequestDTO.getBillType().getId().longValue(); // Convert Integer to Long
-//            ApplicationForm applicationForm = applicationFormRespo.findById(registrationFormRequestDTO.getApplicationForm().getId())
-//                    .orElseThrow(() -> new RuntimeException("Application Form not found with ID: " + registrationFormRequestDTO.getApplicationForm().getId()));
-//            registrationForm.setApplicationForm(applicationForm);
-//        } else {
-//            registrationForm.setApplicationForm(null);
-//        }
-        
-//		if(registrationFormRequestDTO.getBusinessClass() != null && registrationFormRequestDTO.getBusinessClass().getId() != null) {
-//        	BusinessClass businessClass = businessClassRepo.findById(registrationFormRequestDTO.getBusinessClass().getId())
-//        			.orElseThrow(() -> new RuntimeException("Business Class found with ID: " + registrationFormRequestDTO.getBusinessClass().getId()));
-//        	registrationForm.setBusinessClass(businessClass);
-//        }else {
-//			registrationForm.setBusinessClass(null);
-//		}
-//		
-//		if(registrationFormRequestDTO.getBusinessType() != null && registrationFormRequestDTO.getBusinessType().getId() != null) {
-//        	BusinessType businessType = businessTypeRepo.findById(registrationFormRequestDTO.getBusinessType().getId())
-//        			.orElseThrow(() -> new RuntimeException("Business Type not found with ID: " + registrationFormRequestDTO.getBusinessType().getId()));
-//        	registrationForm.setBusinessType(businessType);
-//        }else {
-//			registrationForm.setBusinessType(null);
-//		}
-		
-		if(registrationFormRequestDTO.getCertificateType() != null && registrationFormRequestDTO.getCertificateType().getId() != null) {
-        	ApplicationForm applicationFormCertificateType = applicationFormRespo.findById(registrationFormRequestDTO.getCertificateType().getId())
-        			.orElseThrow(() -> new RuntimeException("Certificate Type not found with ID: " + registrationFormRequestDTO.getCertificateType().getId()));
-        	registrationForm.setCertificationType(applicationFormCertificateType);
-        }else {
-			registrationForm.setCertificationType(null);
-		}
-		
-        if(registrationFormRequestDTO.getRegion() != null && registrationFormRequestDTO.getRegion().getId() != null) {
-        	Region region = regionRepo.findById(registrationFormRequestDTO.getRegion().getId())
-        			.orElseThrow(() -> new RuntimeException("Region not found with ID: " + registrationFormRequestDTO.getRegion().getId()));
-        	registrationForm.setRegion(region);
-        }else {
-			registrationForm.setRegion(null);
-		}
-        
-        if(registrationFormRequestDTO.getDistrict() != null && registrationFormRequestDTO.getDistrict().getId() != null) {
-        	District district = districtRepo.findById(registrationFormRequestDTO.getDistrict().getId())
-        			.orElseThrow(() -> new RuntimeException("District not found with ID: " + registrationFormRequestDTO.getDistrict().getId()));
-        	registrationForm.setDistrict(district);
-        }else {
-			registrationForm.setDistrict(null);
-		}
-        
-        if(registrationFormRequestDTO.getBuildingType() != null && registrationFormRequestDTO.getBuildingType().getId() != null) {
-        	BuildingType buildingType = buildingTypeRepo.findById(registrationFormRequestDTO.getBuildingType().getId())
-        			.orElseThrow(() -> new RuntimeException("Building Type not found with ID: " + registrationFormRequestDTO.getBuildingType().getId()));
-        	registrationForm.setBuildingType(buildingType);
-        }else {
-			registrationForm.setBuildingType(null);
-		}
-        
-        if(registrationFormRequestDTO.getConstructionType() != null && registrationFormRequestDTO.getConstructionType().getId() != null) {
-        	BuildConstructionType  constructionType = constructionTypeRepo.findById(registrationFormRequestDTO.getConstructionType().getId())
-        			.orElseThrow(() -> new RuntimeException("Construction Type not found with ID: " + registrationFormRequestDTO.getConstructionType().getId()));
-        	registrationForm.setConstructionType(constructionType);
-        }else {
-			registrationForm.setConstructionType(null);
-		}
-        
-        
-        if(registrationFormRequestDTO.getConstructionType() != null && registrationFormRequestDTO.getConstructionType().getId() != null) {
-        	BuildConstructionType  constructionType = constructionTypeRepo.findById(registrationFormRequestDTO.getConstructionType().getId())
-        			.orElseThrow(() -> new RuntimeException("Construction Type not found with ID: " + registrationFormRequestDTO.getConstructionType().getId()));
-        	registrationForm.setConstructionType(constructionType);
-        }else {
-			registrationForm.setConstructionType(null);
-		}
-        
-        if (registrationFormRequestDTO.getEscapeMeans() != null && !registrationFormRequestDTO.getEscapeMeans().isEmpty()) {
-            Set<EquipEscapeMeans> escapeMeansSet = registrationFormRequestDTO.getEscapeMeans().stream()
-                .map(dto -> escapeMeansRepo.findById(dto.getId())
-                    .orElseThrow(() -> new RuntimeException("Escape means not found with ID: " + dto.getId())))
-                .collect(Collectors.toSet());
-            registrationForm.setEquipEscapeMeans(escapeMeansSet);
-        } else {
-//            registrationForm.setEquipEscapeMeans(Collections.emptySet());
-        	registrationForm.setEquipEscapeMeans(new HashSet<>());
-        }
 
-        
-        if (registrationFormRequestDTO.getAlarmSystems() != null && !registrationFormRequestDTO.getAlarmSystems().isEmpty()) {
-			Set<EquipAlarmSystem> alarmSystems = registrationFormRequestDTO.getAlarmSystems().stream()
-					.map(dto -> alarmSystemRepo.findById(dto.getId())
-							.orElseThrow(() -> new EquipAlarmSystemNotFoundException("Alarm system not found with ID: " + dto.getId())))
-					.collect(Collectors.toSet());
-					registrationForm.setEquipAlarmSystems(alarmSystems);
-		}else {
-//			registrationForm.setEquipAlarmSystems(Collections.emptySet());
-			registrationForm.setEquipAlarmSystems(new HashSet<>());
-		}
-        
-        if (registrationFormRequestDTO.getFireSystems() != null && !registrationFormRequestDTO.getFireSystems().isEmpty()) {
-			Set<EquipFireFightingSystem> fightingSystems = registrationFormRequestDTO.getFireSystems().stream()
-					.map(dto -> fightingSystemRepo.findById(dto.getId())
-							.orElseThrow(() -> new EquipFireFightingSystemNotFoundException("Alarm system not found with ID: " + dto.getId())))
-					.collect(Collectors.toSet());
-			registrationForm.setEquipFireFightingSystems(fightingSystems);
-		}else {
-//			registrationForm.setEquipFireFightingSystems(Collections.emptySet());
-			registrationForm.setEquipFireFightingSystems(new HashSet<>());
-		}
-        
-        
-        
-		
+	private RegistrationForm convertFromDTOToEntity(RegistrationFormRequestDTO dto) {
+		RegistrationForm registrationForm = mapper.map(dto, RegistrationForm.class);
+
+		registrationForm.setCertificationType(resolveApplicationForm(dto.getCertificateType()));
+
+		registrationForm.setRegion(resolveRegion(dto.getRegion()));
+
+		registrationForm.setDistrict(resolveDistrict(dto.getDistrict()));
+
+		registrationForm.setBuildingType(resolveBuildingType(dto.getBuildingType()));
+		registrationForm.setConstructionType(resolveConstructionType(dto.getConstructionType()));
+
+		registrationForm.setEquipEscapeMeans(resolveEscapeMeans(dto.getEscapeMeans()));
+		registrationForm.setEquipAlarmSystems(resolveAlarmSystems(dto.getAlarmSystems()));
+		registrationForm.setEquipFireFightingSystems(resolveFireSystems(dto.getFireSystems()));
+
 		return registrationForm;
 	}
-	
-	
 
+	private ApplicationForm resolveApplicationForm(ApplicationFormReferenceDTO applicationFormReferenceDTO) {
+		if (applicationFormReferenceDTO == null || applicationFormReferenceDTO.getId() == null)
+			return null;
+		return applicationFormRespo.findById(applicationFormReferenceDTO.getId()).orElseThrow(
+				() -> new RuntimeException("ApplicationForm not found: " + applicationFormReferenceDTO.getId()));
+	}
+
+	private Region resolveRegion(RegionReferenceDTO ref) {
+		if (ref == null || ref.getId() == null)
+			return null;
+		return regionRepo.findById(ref.getId())
+				.orElseThrow(() -> new RuntimeException("Region not found: " + ref.getId()));
+	}
+
+	private District resolveDistrict(DistrictReferenceDTO ref) {
+		if (ref == null || ref.getId() == null)
+			return null;
+		return districtRepo.findById(ref.getId())
+				.orElseThrow(() -> new RuntimeException("District not found: " + ref.getId()));
+	}
+
+	private BuildingType resolveBuildingType(BuildingTypeReferenceDTO ref) {
+		if (ref == null || ref.getId() == null)
+			return null;
+		return buildingTypeRepo.findById(ref.getId())
+				.orElseThrow(() -> new RuntimeException("Building Type not found: " + ref.getId()));
+	}
+
+	private BuildConstructionType resolveConstructionType(ConstructionTypeReferenceDTO ref) {
+		if (ref == null || ref.getId() == null)
+			return null;
+		return constructionTypeRepo.findById(ref.getId())
+				.orElseThrow(() -> new RuntimeException("District not found: " + ref.getId()));
+	}
+//
+//	private Set<EquipEscapeMeans> resolveEscapeMeans(List<ReferenceDTO> refs) {
+//	    if (refs == null) return new HashSet<>();
+//	    return refs.stream()
+//	        .map(r -> escapeMeansRepo.findById(r.getId())
+//	            .orElseThrow(() -> new RuntimeException("EscapeMeans not found: " + r.getId())))
+//	        .collect(Collectors.toSet());
+//	}
+
+	private Set<EquipEscapeMeans> resolveEscapeMeans(Set<EquipEscapeMeansReferenceDTO> refs) {
+		if (refs == null)
+			return new HashSet<>();
+		return refs.stream()
+				.map(r -> escapeMeansRepo.findById(r.getId())
+						.orElseThrow(() -> new RuntimeException("EscapeMeans not found: " + r.getId())))
+				.collect(Collectors.toSet());
+	}
+
+	private Set<EquipAlarmSystem> resolveAlarmSystems(Set<EquipAlarmSystemReferenceDTO> refs) {
+		if (refs == null)
+			return new HashSet<>();
+		return refs.stream()
+				.map(r -> alarmSystemRepo.findById(r.getId()).orElseThrow(
+						() -> new EquipAlarmSystemNotFoundException("AlarmSystem not found: " + r.getId())))
+				.collect(Collectors.toSet());
+	}
+
+	private Set<EquipFireFightingSystem> resolveFireSystems(Set<EquipFireSystemReferenceDTO> refs) {
+		if (refs == null)
+			return new HashSet<>();
+		return refs.stream()
+				.map(r -> fightingSystemRepo.findById(r.getId()).orElseThrow(
+						() -> new EquipFireFightingSystemNotFoundException("FireSystem not found: " + r.getId())))
+				.collect(Collectors.toSet());
+	}
 
 }
